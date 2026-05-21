@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f8fafb;
+  --foreground: #1a2332;
+  --surface: #ffffff;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --accent: #0d9488;
+  --accent-light: #ccfbf1;
+  --accent-muted: #5eead4;
+  --clinical-blue: #0369a1;
+  --clinical-blue-light: #e0f2fe;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(15 23 42 / 0.06), 0 2px 4px -2px rgb(15 23 42 / 0.04);
+}
+
+[data-theme="dark"] {
+  --background: #0f1419;
+  --foreground: #e8edf2;
+  --surface: #1a2332;
+  --border: #2d3a4d;
+  --muted: #94a3b8;
+  --accent: #2dd4bf;
+  --accent-light: #134e4a;
+  --clinical-blue-light: #0c4a6e;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-clinical-blue: var(--clinical-blue);
+  --color-clinical-blue-light: var(--clinical-blue-light);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out forwards;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+.metric-transition {
+  transition: width 0.45s ease-out, opacity 0.3s ease-out;
+}
+
+.page-enter {
+  animation: fade-in 0.4s ease-out forwards;
 }
