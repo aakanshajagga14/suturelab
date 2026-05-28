@@ -63,7 +63,8 @@ export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
         </p>
         <h1 className="mt-2 text-2xl font-semibold">{report.taskName}</h1>
         <p className="mt-1 text-sm text-[#6B7F8F]">
-          Attempt {report.attemptNumber} · {date}
+          Attempt {report.attemptNumber} · {date} ·{" "}
+          {report.sessionMode === "assessment" ? "Assessment" : "Training"}
         </p>
         <div
           className={`mt-4 inline-flex rounded-lg border px-4 py-2 font-mono text-sm font-semibold ${resultStyles[report.benchmarkResult]}`}
@@ -138,6 +139,26 @@ export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {report.benchmarkResult === "NEEDS_PRACTICE" && (
+        <section className="mb-6 rounded-lg border border-[#00D4AA]/30 bg-[#00D4AA]/5 p-4">
+          <p className="text-sm text-[#E8EDF2]">
+            Return to Training Mode to review guided steps
+            {report.weakestPhase ? ` — focus area: ${report.weakestPhase}` : ""}.
+          </p>
+          <Link
+            href={`/laparoscopic/${report.taskId}`}
+            className="mt-3 inline-block text-sm font-medium text-[#00D4AA]"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                localStorage.setItem("fls-session-mode", "training");
+              }
+            }}
+          >
+            Open task in Training Mode →
+          </Link>
         </section>
       )}
 

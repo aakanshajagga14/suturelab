@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Lock, Activity } from "lucide-react";
 import { TASK_META, FLS_BENCHMARKS } from "@/lib/laparoscopic/flsBenchmarks";
 import { getFlsProgress } from "@/lib/laparoscopic/sessionStorage";
+import {
+  getFlsSessionMode,
+  setFlsSessionMode,
+  type FlsSessionMode,
+} from "@/lib/laparoscopic/trainingMode";
+import { ModeToggle } from "@/components/laparoscopic/ModeToggle";
 import type { FlsProgress, FlsTaskId } from "@/lib/laparoscopic/types";
 
 const TASK_ORDER: FlsTaskId[] = [
@@ -15,10 +21,17 @@ const TASK_ORDER: FlsTaskId[] = [
 
 export default function LaparoscopicLandingPage() {
   const [progress, setProgress] = useState<FlsProgress | null>(null);
+  const [mode, setMode] = useState<FlsSessionMode>("training");
 
   useEffect(() => {
     setProgress(getFlsProgress());
+    setMode(getFlsSessionMode());
   }, []);
+
+  const handleModeChange = (m: FlsSessionMode) => {
+    setMode(m);
+    setFlsSessionMode(m);
+  };
 
   const unlocked = (id: FlsTaskId): boolean => {
     if (!progress) return id === "peg-transfer";
@@ -42,12 +55,21 @@ export default function LaparoscopicLandingPage() {
           dissection, and intracorporeal suturing — competencies required for
           appendectomy, hernia repair, and bowel anastomosis.
         </p>
-        <Link
-          href="/"
-          className="mt-6 inline-block text-xs text-[#6B7F8F] hover:text-[#E8EDF2]"
-        >
-          ← Return to SutureLab dashboard
-        </Link>
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href="/"
+            className="text-xs text-[#6B7F8F] hover:text-[#E8EDF2]"
+          >
+            ← Return to SutureLab dashboard
+          </Link>
+          <ModeToggle mode={mode} onChange={handleModeChange} />
+        </div>
+        <p className="mt-3 text-xs text-[#6B7F8F]">
+          Default session mode:{" "}
+          {mode === "training"
+            ? "Training (guided steps, no time pressure)"
+            : "Assessment (FLS-standard timed evaluation)"}
+        </p>
       </header>
 
       <div className="grid gap-6">

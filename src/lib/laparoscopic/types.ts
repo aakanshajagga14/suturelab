@@ -42,13 +42,17 @@ export interface LapPhaseMarker {
   endT: number;
 }
 
+export type FlsSessionMode = "training" | "assessment";
+
 export interface LapSessionReport {
   id: string;
   taskId: FlsTaskId;
   taskName: string;
+  sessionMode: FlsSessionMode;
   attemptNumber: number;
   completedAt: string;
   benchmarkResult: FlsBenchmarkResult;
+  weakestPhase: string;
   durationSeconds: number;
   errorCount: number;
   metrics: Record<string, LapMetricSnapshot>;

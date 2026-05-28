@@ -3,8 +3,8 @@ import type {
   PerformanceScores,
   ProceduralPhaseInfo,
 } from "@/lib/types";
-import type { PathMetrics } from "./scoringEngine";
-import type { StabilityResult } from "./stabilityEngine";
+import type { PathMetrics } from "@/lib/scoring-engine";
+import type { StabilityResult } from "@/lib/stability-engine";
 import type { MotionQualityResult } from "./motionQualityEngine";
 import { PATH_THRESHOLD_PX } from "@/lib/suturing/stitchPath";
 

@@ -5,12 +5,12 @@ import type {
   ProceduralPhaseInfo,
   PerformanceScores,
 } from "@/lib/types";
-import { StabilityEngine } from "./stabilityEngine";
+import { StabilityEngine } from "@/lib/stability-engine";
 import { MotionQualityEngine } from "./motionQualityEngine";
 import {
   computePathMetrics,
   computePerformanceScores,
-} from "./scoringEngine";
+} from "@/lib/scoring-engine";
 import { generateClinicalFeedback } from "./feedbackEngine";
 import { getPhaseForProgress } from "./phases";
 import { SessionAnalyticsRecorder } from "./analyticsEngine";

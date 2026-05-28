@@ -1,10 +1,18 @@
-import type { FlsTaskId, LapSessionReport, LapErrorEvent, LapPhaseMarker } from "./types";
+import type {
+  FlsTaskId,
+  FlsSessionMode,
+  LapSessionReport,
+  LapErrorEvent,
+  LapPhaseMarker,
+} from "./types";
 import { evaluateBenchmark, FLS_BENCHMARKS, TASK_META } from "./flsBenchmarks";
 import { generateSessionId } from "./sessionStorage";
 import type { StabilityTrendPoint } from "@/lib/types";
 
 export interface ReportInput {
   taskId: FlsTaskId;
+  mode: FlsSessionMode;
+  weakestPhase: string;
   durationSeconds: number;
   metrics: Record<string, number>;
   feedbackHistory: string[];
@@ -116,6 +124,8 @@ export function buildLapSessionReport(input: ReportInput): LapSessionReport {
     id: generateSessionId(),
     taskId: input.taskId,
     taskName: meta.name,
+    sessionMode: input.mode,
+    weakestPhase: input.weakestPhase,
     attemptNumber: input.attemptNumber,
     completedAt: new Date().toISOString(),
     benchmarkResult,

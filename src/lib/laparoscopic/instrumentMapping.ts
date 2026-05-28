@@ -1,12 +1,10 @@
 import type { Point2D } from "@/lib/types";
 import type { InstrumentSide, InstrumentState } from "./types";
+import type { RawHandData } from "./dualHandTracker";
 
 const GRASP_THRESHOLD_NORM = 0.045;
 
-export interface RawHandData {
-  landmarks: Point2D[];
-  handedness: "Left" | "Right" | "Unknown";
-}
+export type { RawHandData };
 
 export function mapHandToInstrument(
   hand: RawHandData,
