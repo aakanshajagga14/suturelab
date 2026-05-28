@@ -1,4 +1,4 @@
-# SutureLab
+# SutureLab: AI-Powered Surgical Skills Training Platform
 
 Clinical skills training platform built for the OpenAI Hackathon.
 
