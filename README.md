@@ -101,6 +101,31 @@ src/
 - `localhost` or HTTPS (required for `getUserMedia`)
 - Internet access on first run (MediaPipe model/WASM fetch)
 
+## Deploy to Vercel
+
+This repo is ready for Vercel (Next.js auto-detected, no env vars required).
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Faakanshajagga14%2Fsuturelab)
+
+**Connect GitHub (one-time):**
+
+1. Open the button above (or [Import `aakanshajagga14/suturelab`](https://vercel.com/new/import?s=https://github.com/aakanshajagga14/suturelab)).
+2. Sign in to Vercel with **GitHub** and authorize access.
+3. Select repository **`aakanshajagga14/suturelab`**, branch **`main`**.
+4. Keep defaults: **Framework** Next.js, **Build Command** `npm run build`, **Install Command** `npm install`.
+5. Click **Deploy**.
+
+After the first deploy, every push to `main` redeploys automatically.
+
+**CLI alternative (optional):**
+
+```bash
+npm i -g vercel
+vercel login
+vercel link
+vercel --prod
+```
+
 ## OpenAI Hackathon Note
 
 This project is submitted as an OpenAI Hackathon build focused on practical, feedback-driven clinical simulation in the browser.
