@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ArrowRight, FileText } from "lucide-react";
-import { getSessionById } from "@/lib/laparoscopic/sessionStorage";
-import type { LapSessionReport, FlsBenchmarkResult } from "@/lib/laparoscopic/types";
+import { setFlsSessionMode } from "@/lib/laparoscopic/trainingMode";
+import { useLapSession } from "@/hooks/use-client-storage";
+import type { FlsBenchmarkResult } from "@/lib/laparoscopic/types";
 import { StabilityChart } from "@/components/analytics/StabilityChart";
 import { renderHeatmapFromData } from "@/lib/engines/heatmapRenderer";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 const resultStyles: Record<FlsBenchmarkResult, string> = {
   PASS: "text-[#2ECC71] border-[#2ECC71]/30",
@@ -26,12 +26,8 @@ interface LapSessionReportViewProps {
 }
 
 export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
-  const [report, setReport] = useState<LapSessionReport | null>(null);
+  const report = useLapSession(sessionId);
   const heatmapRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    setReport(getSessionById(sessionId));
-  }, [sessionId]);
 
   useEffect(() => {
     if (!report || !heatmapRef.current) return;
@@ -46,8 +42,8 @@ export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
         <FileText className="mx-auto h-10 w-10 text-[#6B7F8F]" />
         <p className="mt-4 text-[#6B7F8F]">Session record not found.</p>
-        <Link href="/laparoscopic" className="mt-6 inline-block text-[#00D4AA]">
-          Return to FLS module
+        <Link href="/training" className="mt-6 inline-block text-[#00D4AA]">
+          Return to training
         </Link>
       </div>
     );
@@ -149,15 +145,11 @@ export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
             {report.weakestPhase ? ` — focus area: ${report.weakestPhase}` : ""}.
           </p>
           <Link
-            href={`/laparoscopic/${report.taskId}`}
+            href={`/training/${report.taskId}`}
             className="mt-3 inline-block text-sm font-medium text-[#00D4AA]"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                localStorage.setItem("fls-session-mode", "training");
-              }
-            }}
+            onClick={() => setFlsSessionMode("training")}
           >
-            Open task in Training Mode →
+            Open task in Training Mode
           </Link>
         </section>
       )}
@@ -183,14 +175,14 @@ export function LapSessionReportView({ sessionId }: LapSessionReportViewProps) {
 
       <div className="flex flex-wrap gap-3 border-t border-[#1E2A35] pt-8">
         <Link
-          href={`/laparoscopic/${report.taskId}`}
+          href={`/training/${report.taskId}`}
           className="inline-flex items-center gap-2 rounded-lg bg-[#00D4AA] px-5 py-2.5 text-sm font-medium text-[#0A0E12]"
         >
           New Attempt
           <ArrowRight className="h-4 w-4" />
         </Link>
         <Link
-          href="/laparoscopic"
+          href="/training"
           className="inline-flex items-center gap-2 rounded-lg border border-[#1E2A35] px-5 py-2.5 text-sm text-[#E8EDF2]"
         >
           Task Selection

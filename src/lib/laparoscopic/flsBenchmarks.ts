@@ -1,4 +1,5 @@
 import type { FlsBenchmarkResult, FlsTaskId } from "./types";
+import { LAPAROSCOPIC_TASKS } from "./tasks";
 
 export const FLS_BENCHMARKS = {
   "peg-transfer": {
@@ -59,29 +60,16 @@ export function evaluateBenchmark(
   return "NEEDS_PRACTICE";
 }
 
-export const TASK_META: Record<
+export const TASK_META = Object.fromEntries(
+  Object.entries(LAPAROSCOPIC_TASKS).map(([id, task]) => [
+    id,
+    {
+      name: task.name,
+      description: task.description,
+      clinicalPurpose: task.clinicalPurpose,
+    },
+  ])
+) as Record<
   FlsTaskId,
   { name: string; description: string; clinicalPurpose: string }
-> = {
-  "peg-transfer": {
-    name: "Peg Transfer",
-    description:
-      "Transfer six rings between peg rows using bimanual instrument control.",
-    clinicalPurpose:
-      "Develops bimanual coordination, instrument control, and ambidextrous dexterity.",
-  },
-  "pattern-cutting": {
-    name: "Pattern Cutting",
-    description:
-      "Cut along a marked circle on gauze with scissors while stabilizing with a grasper.",
-    clinicalPurpose:
-      "Trains dominant-hand precision and non-dominant tissue stabilization.",
-  },
-  "knot-tying": {
-    name: "Intracorporeal Knot Tying",
-    description:
-      "Complete a square knot with two instrument throws inside the laparoscopic field.",
-    clinicalPurpose:
-      "Fine motor control for suturing in confined spaces — appendectomy, hernia, anastomosis.",
-  },
-};
+>;

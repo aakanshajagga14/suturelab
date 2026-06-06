@@ -56,12 +56,11 @@ export function drawWebcamHandOverlay(
 
   const drawHand = (
     hand: NonNullable<ProcessedDualHandResult["left"]>,
-    mirror: boolean,
     label: string
   ) => {
     count++;
     const landmarks = hand.landmarks;
-    const points = landmarks.map((lm) => toCanvas(lm, width, height, mirror));
+    const points = landmarks.map((lm) => toCanvas(lm, width, height, false));
 
     ctx.strokeStyle = "rgba(0, 212, 170, 0.7)";
     ctx.lineWidth = 2;
@@ -92,7 +91,7 @@ export function drawWebcamHandOverlay(
         hand.isGrasping,
         width,
         height,
-        mirror
+        false
       );
     }
 
@@ -104,14 +103,14 @@ export function drawWebcamHandOverlay(
     }
   };
 
-  if (hands.left) drawHand(hands.left, false, labels.left);
-  if (hands.right) drawHand(hands.right, true, labels.right);
+  if (hands.left) drawHand(hands.left, labels.left);
+  if (hands.right) drawHand(hands.right, labels.right);
 
   if (trackingUi) {
     drawWebcamTrackingHud(ctx, width, height, trackingUi);
   }
 
-  return { tracking: count > 0, bothHands: count >= 2 };
+  return { tracking: count > 0, bothHands: !!(hands.left && hands.right) };
 }
 
 export function drawWebcamNoHandsOverlay(

@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SutureLab | Clinical Suturing Training",
+  title: "LaparoSim | AI Laparoscopic Simulation",
   description:
-    "Accessible surgical skill training through browser-based simulation with real-time hand tracking feedback.",
+    "AI-powered laparoscopic simulation using only a webcam for deliberate surgical training.",
 };
 
 export default function RootLayout({

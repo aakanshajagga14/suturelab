@@ -23,14 +23,12 @@ export function isDemoComplete(startTime: number, now: number): boolean {
 export function getDemoFrame(
   geo: ViewportGeometry,
   startTime: number,
-  now: number,
-  w: number,
-  h: number
+  now: number
 ): DemoFrame {
   const elapsed = now - startTime;
   const stepIndex = Math.min(5, Math.floor(elapsed / STEP_MS));
   const localT = (elapsed % STEP_MS) / STEP_MS;
-  const ghosts = getPegGhostTargets(geo, stepIndex, 0, 3, w, h);
+  const ghosts = getPegGhostTargets(geo, stepIndex, 0, 3);
 
   const entryR = { x: geo.cx + geo.rx * 0.85, y: geo.cy + geo.ry * 0.9 };
   const entryL = { x: geo.cx - geo.rx * 0.85, y: geo.cy + geo.ry * 0.9 };

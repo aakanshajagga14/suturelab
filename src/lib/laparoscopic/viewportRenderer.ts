@@ -111,8 +111,7 @@ export function drawLaparoscopicFrame(
 export function drawPeg(
   ctx: CanvasRenderingContext2D,
   x: number,
-  y: number,
-  geo: ViewportGeometry
+  y: number
 ): void {
   ctx.strokeStyle = "#6B5A4E";
   ctx.lineWidth = 3;
@@ -128,8 +127,7 @@ export function drawPeg(
 
 export function drawRing(
   ctx: CanvasRenderingContext2D,
-  ring: PegTransferRing,
-  geo: ViewportGeometry
+  ring: PegTransferRing
 ): void {
   const scale = 0.85 + ring.z * 0.15;
   const r = 14 * scale;

@@ -44,6 +44,26 @@ export interface LapPhaseMarker {
 
 export type FlsSessionMode = "training" | "assessment";
 
+export interface LaparoscopicTaskDefinition {
+  id: FlsTaskId;
+  name: string;
+  description: string;
+  clinicalPurpose: string;
+  configuration: {
+    estimatedMinutes: number;
+    requiredHands: "dominant" | "dual";
+    primaryInstruments: string[];
+    assessmentTimeLimitSeconds?: number;
+  };
+  scoring: {
+    primaryMetrics: string[];
+    benchmarkLabels: string[];
+  };
+  successConditions: string[];
+  analyticsHooks: string[];
+  instructions: string[];
+}
+
 export interface LapSessionReport {
   id: string;
   taskId: FlsTaskId;

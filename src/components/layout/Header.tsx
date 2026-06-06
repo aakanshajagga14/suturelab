@@ -24,10 +24,10 @@ export function Header({ showNav = true }: HeaderProps) {
           </div>
           <div>
             <span className="text-sm font-semibold tracking-tight text-[var(--foreground)]">
-              SutureLab
+              LaparoSim
             </span>
             <span className="ml-2 hidden text-xs text-[var(--muted)] sm:inline">
-              Clinical Skills Platform
+              Surgical Simulation
             </span>
           </div>
         </Link>
@@ -46,14 +46,14 @@ export function Header({ showNav = true }: HeaderProps) {
                 <Sun className="h-4 w-4" />
               )}
             </button>
-            <Link href="/laparoscopic">
+            <Link href="/training">
               <Button size="sm" variant="secondary">
-                FLS Laparoscopic
+                Training
               </Button>
             </Link>
-            <Link href="/session">
+            <Link href="/assessment">
               <Button size="sm" variant="primary">
-                Suturing
+                Assessment
               </Button>
             </Link>
           </nav>

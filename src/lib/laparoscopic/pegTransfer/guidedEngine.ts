@@ -29,9 +29,9 @@ export function evaluateGuidedStep(ctx: GuidedStepContext): GuidedStepResult {
   const ring = ctx.rings[ctx.ringIndex];
   const srcPeg = ctx.ringIndex;
   const tgtPeg = ctx.ringIndex + 3;
-  const ringPos = pegCoords(srcPeg, ctx.geo, ctx.width, ctx.height);
+  const ringPos = pegCoords(srcPeg, ctx.geo);
   ringPos.y -= 28;
-  const targetPos = pegCoords(tgtPeg, ctx.geo, ctx.width, ctx.height);
+  const targetPos = pegCoords(tgtPeg, ctx.geo);
   targetPos.y -= 28;
   const centre = { x: ctx.geo.cx, y: ctx.midlineY };
 
@@ -55,7 +55,7 @@ export function evaluateGuidedStep(ctx: GuidedStepContext): GuidedStepResult {
       return {
         complete: false,
         feedback:
-          "Good approach trajectory — continue until the instrument tip is at the ring.",
+          "Maintain this approach trajectory until the instrument tip reaches the ring.",
       };
     }
     case 1: {

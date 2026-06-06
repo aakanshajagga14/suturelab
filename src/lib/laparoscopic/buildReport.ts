@@ -170,40 +170,40 @@ function generateRecommendations(
   if (taskId === "peg-transfer") {
     if ((metrics.pathLengthCm ?? 0) > 140) {
       items.push(
-        "Focus on reducing instrument path length — approach pegs in a direct arc rather than repositioning mid-field"
+        "Focus on reducing instrument path length; approach pegs in a direct arc rather than repositioning mid-field"
       );
     }
     if ((metrics.drops ?? 0) > 0) {
       items.push(
-        "Practice mid-air handoff at elevated transfer height — drops indicate premature release or inadequate clearance"
+        "Practice mid-air handoff at elevated transfer height; drops indicate premature release or inadequate clearance"
       );
     }
     if ((metrics.bimanualSync ?? 100) < 65) {
       items.push(
-        "Coordinate bimanual timing — non-dominant catcher should close before dominant instrument opens"
+        "Coordinate bimanual timing; non-dominant catcher should close before dominant instrument opens"
       );
     }
   } else if (taskId === "pattern-cutting") {
     if ((metrics.meanDeviationMm ?? 0) > 1.5) {
       items.push(
-        "Stabilize non-dominant traction while dominant hand follows marked circle — deviation suggests coupled movement"
+        "Stabilize non-dominant traction while dominant hand follows marked circle; deviation suggests coupled movement"
       );
     }
   } else {
     if ((metrics.precision ?? 100) < 75) {
       items.push(
-        "Complete needle arc with wrist supination — incomplete drives are the most common error at this phase"
+        "Maintain instrument alignment through the wrap; incomplete rotation reduces knot security"
       );
     }
   }
   if (items.length === 0 && result !== "PASS") {
     items.push(
-      "Continue structured repetition against FLS benchmarks — metric variability suggests inconsistent phase execution"
+      "Continue structured repetition against FLS benchmarks; metric variability suggests inconsistent phase execution"
     );
   }
   if (items.length === 0) {
     items.push(
-      "Performance within FLS passing parameters — maintain technique during timed repetition"
+      "Performance within FLS passing parameters; maintain technique during timed repetition"
     );
   }
   return items.slice(0, 3);

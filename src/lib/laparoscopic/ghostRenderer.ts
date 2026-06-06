@@ -1,7 +1,5 @@
 import type { Point2D } from "@/lib/types";
 import type { ViewportGeometry } from "./viewportRenderer";
-import { LAP_COLORS } from "./viewportRenderer";
-import type { InstrumentState } from "./types";
 
 const GHOST = "rgba(0, 212, 170, 0.4)";
 
@@ -97,9 +95,7 @@ export function getPegGhostTargets(
   geo: ViewportGeometry,
   step: number,
   ringPeg: number,
-  targetPeg: number,
-  w: number,
-  h: number
+  targetPeg: number
 ): { path: Point2D[]; ghostTips: Point2D[]; hintFrom?: Point2D; hintTo?: Point2D } {
   const peg = (idx: number) => ({
     x: geo.cx + (idx < 3 ? -0.18 : 0.18) * geo.rx * 2,

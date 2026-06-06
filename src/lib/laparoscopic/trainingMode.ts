@@ -67,16 +67,23 @@ function defaultGuided(taskId: FlsTaskId): GuidedProgressStore {
   };
 }
 
+/** SSR-safe default — use for useState initial value before hydrating from localStorage. */
+export function createDefaultGuidedProgress(
+  taskId: FlsTaskId
+): GuidedProgressStore {
+  return defaultGuided(taskId);
+}
+
 export function getInstrumentLabels(taskId: FlsTaskId): {
   left: string;
   right: string;
 } {
   switch (taskId) {
     case "pattern-cutting":
-      return { left: "L — Grasper", right: "R — Scissors" };
+      return { left: "L - Grasper", right: "R - Scissors" };
     case "knot-tying":
-      return { left: "L — Grasper", right: "R — Needle Driver" };
+      return { left: "L - Grasper", right: "R - Driver" };
     default:
-      return { left: "L — Grasper", right: "R — Maryland Grasper" };
+      return { left: "L - Grasper", right: "R - Maryland Grasper" };
   }
 }

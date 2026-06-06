@@ -1,8 +1,9 @@
 import type { PerformanceScores, Point2D } from "@/lib/types";
-import { getClosestPointOnPath, PATH_THRESHOLD_PX } from "@/lib/suturing/stitchPath";
 import { clamp } from "@/lib/utils/math";
 import type { StabilityResult } from "@/lib/stability-engine";
 import type { MotionQualityResult } from "@/lib/engines/motionQualityEngine";
+
+export const PATH_THRESHOLD_PX = 42;
 
 export interface PathMetrics {
   deviation: number;
@@ -80,5 +81,27 @@ export function computePerformanceScores(
     proceduralConsistency,
     smoothness: motion.smoothnessScore,
     controlRating: motion.controlRating,
+  };
+}
+
+function getClosestPointOnPath(point: Point2D, path: Point2D[]) {
+  let bestDistance = Number.POSITIVE_INFINITY;
+  let bestIndex = 0;
+  let closest: Point2D = path[0] ?? point;
+
+  for (let i = 0; i < path.length; i++) {
+    const p = path[i];
+    const distance = Math.hypot(point.x - p.x, point.y - p.y);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = i;
+      closest = p;
+    }
+  }
+
+  return {
+    distance: bestDistance,
+    closest,
+    progress: path.length <= 1 ? 0 : bestIndex / (path.length - 1),
   };
 }

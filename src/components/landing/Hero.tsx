@@ -1,22 +1,22 @@
 import Link from "next/link";
-import { ArrowRight, Shield, Video, LineChart } from "lucide-react";
+import { ArrowRight, LineChart, Shield, Video } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 const features = [
   {
     icon: Video,
-    title: "Webcam Hand Tracking",
-    desc: "MediaPipe-powered landmark detection for precise movement analysis.",
+    title: "Webcam Instrument Control",
+    desc: "MediaPipe-powered hand tracking maps motion into laparoscopic instrument behavior.",
   },
   {
     icon: LineChart,
-    title: "Real-Time Feedback",
-    desc: "Rule-based precision scoring and trajectory guidance during practice.",
+    title: "Assessment Metrics",
+    desc: "Stability, economy of motion, smoothness, idle time, and dual-hand coordination.",
   },
   {
     icon: Shield,
-    title: "Clinical-Grade UX",
-    desc: "Professional interface aligned with healthcare education standards.",
+    title: "Simulator Workflow",
+    desc: "Focused training and timed assessment for laparoscopic skills practice.",
   },
 ];
 
@@ -26,30 +26,30 @@ export function Hero() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
         <div className="mx-auto max-w-3xl text-center animate-fade-in">
           <p className="mb-4 inline-flex items-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-3 py-1 text-xs font-medium text-[var(--muted)]">
-            Medical Education Technology
+            AI-powered laparoscopic simulation using only a webcam
           </p>
           <h1 className="text-4xl font-semibold tracking-tight text-[var(--foreground)] sm:text-5xl">
-            SutureLab
+            LaparoSim
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-[var(--muted)]">
-            Accessible surgical skill training through browser-based simulation.
+            Deliberate practice for minimally invasive surgery in the browser.
           </p>
           <p className="mt-4 text-base text-[var(--muted)]">
-            Practice guided suturing exercises with real-time hand tracking and
-            structured feedback — designed for medical students and clinical
-            training programs.
+            Train peg transfer, pattern cutting, and knot tying with real-time
+            instrument analytics and actionable simulator feedback.
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/session">
+            <Link href="/training">
               <Button size="lg" variant="primary">
-                Start Session
+                Start Training
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <Button size="lg" variant="outline" disabled>
-              Institution Login
-              <span className="ml-1 text-xs text-[var(--muted)]">(Coming soon)</span>
-            </Button>
+            <Link href="/assessment">
+              <Button size="lg" variant="outline">
+                Open Assessment
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -57,7 +57,7 @@ export function Hero() {
           {features.map((item) => (
             <div
               key={item.title}
-              className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)] transition-shadow hover:shadow-[var(--shadow-md)]"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[var(--shadow-sm)]"
             >
               <item.icon
                 className="h-5 w-5 text-[var(--accent)]"

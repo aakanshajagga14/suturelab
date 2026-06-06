@@ -34,8 +34,7 @@ export function updatePatternCutting(
   scissorsTip: Point2D | null,
   grasperTip: Point2D | null,
   grasperClosed: boolean,
-  targetPath: Point2D[],
-  geo: ViewportGeometry
+  targetPath: Point2D[]
 ): { state: PatternCuttingState; feedback: string; phaseLabel: string } {
   let feedback =
     "Non-dominant grasper should tension gauze — dominant hand initiates cutting along marked circle";

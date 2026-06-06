@@ -1,4 +1,3 @@
-import { movingAverage, standardDeviation } from "@/lib/utils/math";
 
 export class BimanualSyncTracker {
   private leftVel: number[] = [];
@@ -130,13 +129,6 @@ export class MetricHistoryBuffer {
 export function tremorFromStability(stabilityScore: number): number {
   return stabilityScore;
 }
-
-export { analyzeJitter, tremorIndexFromJitter } from "@/lib/jitter-detector";
-export { StabilityEngine, type StabilityResult } from "@/lib/stability-engine";
-export {
-  computePathMetrics,
-  computePerformanceScores,
-} from "@/lib/scoring-engine";
 
 export function metricColorState(
   value: number,

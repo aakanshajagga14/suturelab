@@ -2,15 +2,18 @@ interface TrainingStepIndicatorProps {
   current: number;
   total: number;
   title: string;
+  /** When true, renders without absolute positioning (for sidebar use). */
+  inline?: boolean;
 }
 
 export function TrainingStepIndicator({
   current,
   total,
   title,
+  inline = false,
 }: TrainingStepIndicatorProps) {
-  return (
-    <div className="absolute left-3 right-3 top-3 z-10 rounded-lg border border-[#1E2A35]/80 bg-[#0D1117]/90 px-3 py-2 backdrop-blur-sm">
+  const content = (
+    <>
       <div className="flex items-center gap-1.5">
         {Array.from({ length: total }, (_, i) => (
           <span
@@ -19,7 +22,7 @@ export function TrainingStepIndicator({
               i < current
                 ? "bg-[#00D4AA]"
                 : i === current
-                  ? "bg-[#00D4AA] animate-pulse-subtle"
+                  ? "animate-pulse-subtle bg-[#00D4AA]"
                   : "border border-[#6B7F8F] bg-transparent"
             }`}
           />
@@ -29,6 +32,14 @@ export function TrainingStepIndicator({
         Step {current + 1} of {total}
       </p>
       <p className="text-sm font-medium text-[#E8EDF2]">{title}</p>
+    </>
+  );
+
+  if (inline) return content;
+
+  return (
+    <div className="absolute left-3 right-3 top-3 z-10 rounded-lg border border-[#1E2A35]/80 bg-[#0D1117]/90 px-3 py-2 backdrop-blur-sm">
+      {content}
     </div>
   );
 }

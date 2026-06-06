@@ -123,15 +123,15 @@ export class InstrumentPositionPipeline {
   }
 }
 
-/** Training: smoother control; assessment: slightly more responsive. */
+/** Faster pickup for positioning; still stable enough for instrument control. */
 export function createHandPipelines(mode: "training" | "assessment"): {
   left: InstrumentPositionPipeline;
   right: InstrumentPositionPipeline;
 } {
   const responsive = mode === "assessment";
   const base = responsive
-    ? { alpha: 0.15, deadZone: 0.006, maxVelocity: 0.05 }
-    : { alpha: 0.12, deadZone: 0.008, maxVelocity: 0.04 };
+    ? { alpha: 0.22, deadZone: 0.004, maxVelocity: 0.07, minHoldFrames: 2, closeThreshold: 0.075 }
+    : { alpha: 0.18, deadZone: 0.005, maxVelocity: 0.06, minHoldFrames: 2, closeThreshold: 0.075 };
 
   return {
     left: new InstrumentPositionPipeline({ ...base, keyPrefix: "L_" }),

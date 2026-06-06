@@ -2,7 +2,6 @@ import type {
   InstrumentState,
   PegTransferRing,
   PegTransferState,
-  PegTransferPhase,
   LapErrorEvent,
   LapPhaseMarker,
 } from "../types";
@@ -49,9 +48,7 @@ export function createInitialPegState(): PegTransferState {
 
 export function pegCoords(
   pegIndex: number,
-  geo: ViewportGeometry,
-  w: number,
-  h: number
+  geo: ViewportGeometry
 ): { x: number; y: number } {
   const p = PEG_POSITIONS[pegIndex];
   return {
@@ -63,8 +60,6 @@ export function pegCoords(
 export function syncRingPositions(
   state: PegTransferState,
   geo: ViewportGeometry,
-  w: number,
-  h: number,
   left: InstrumentState | null,
   right: InstrumentState | null
 ): void {
@@ -78,7 +73,7 @@ export function syncRingPositions(
       ring.y = right.tip.y;
       ring.z = right.depth;
     } else if (ring.pegIndex !== null) {
-      const c = pegCoords(ring.pegIndex, geo, w, h);
+      const c = pegCoords(ring.pegIndex, geo);
       ring.x = c.x;
       ring.y = c.y - 28;
       ring.z = 0;
@@ -108,8 +103,6 @@ export function updatePegTransfer(
   left: InstrumentState | null,
   right: InstrumentState | null,
   geo: ViewportGeometry,
-  w: number,
-  h: number,
   elapsedSec: number
 ): PegTransferUpdateResult {
   const events: LapErrorEvent[] = [];
@@ -118,7 +111,7 @@ export function updatePegTransfer(
   let phaseLabel = "Awaiting instrument tracking";
 
   state.elapsedMs = Date.now() - state.startTime;
-  syncRingPositions(state, geo, w, h, left, right);
+  syncRingPositions(state, geo, left, right);
 
   if (!left && !right) {
     return { state, feedback, phaseLabel, events };
@@ -141,8 +134,8 @@ export function updatePegTransfer(
     step < 3 ? "forward" : "reverse";
   const srcPeg = sourcePegForRing(idx, dir);
   const tgtPeg = targetPegForRing(idx, dir);
-  const src = pegCoords(srcPeg, geo, w, h);
-  const tgt = pegCoords(tgtPeg, geo, w, h);
+  const src = pegCoords(srcPeg, geo);
+  const tgt = pegCoords(tgtPeg, geo);
 
   const dominant: InstrumentState | null = right ?? left;
   const nonDom: InstrumentState | null =

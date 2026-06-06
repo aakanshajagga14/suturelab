@@ -6,8 +6,8 @@ export interface CameraSetupStatus {
   holdProgress: number;
 }
 
-const CONFIDENCE_GOOD = 0.7;
-const HOLD_MS = 2000;
+const CONFIDENCE_GOOD = 0.45;
+const HOLD_MS = 800;
 const LIGHTING_MIN = 35;
 const LIGHTING_MAX = 245;
 

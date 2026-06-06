@@ -25,6 +25,11 @@ function defaultProgress(): FlsProgress {
   };
 }
 
+/** SSR-safe default — use for useState initial value before hydrating from localStorage. */
+export function createDefaultFlsProgress(): FlsProgress {
+  return defaultProgress();
+}
+
 export function saveFlsProgress(update: Partial<FlsProgress>): FlsProgress {
   const current = getFlsProgress();
   const next = { ...current, ...update };

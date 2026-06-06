@@ -4,8 +4,7 @@ import type { CameraSetupStatus } from "@/lib/hand-tracking/camera-setup";
 
 interface CameraSetupPanelProps {
   status: CameraSetupStatus;
-  onBegin?: () => void;
-  beginLabel?: string;
+  onSkip?: () => void;
 }
 
 function StatusRow({
@@ -34,11 +33,10 @@ function StatusRow({
 
 export function CameraSetupPanel({
   status,
-  onBegin,
-  beginLabel,
+  onSkip,
 }: CameraSetupPanelProps) {
   return (
-    <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col border-t border-[#1E2A35] bg-[#0A0E12]/92 p-3 backdrop-blur-sm">
+    <div className="pointer-events-auto absolute inset-x-0 bottom-0 z-10 flex flex-col border-t border-[#1E2A35] bg-[#0A0E12]/92 p-3 backdrop-blur-sm">
       <h2 className="text-xs font-semibold uppercase tracking-widest text-[#6B7F8F]">
         Hand Positioning
       </h2>
@@ -71,13 +69,13 @@ export function CameraSetupPanel({
         Plain background · front lighting · hands 40–70 cm from camera
       </p>
 
-      {onBegin ? (
+      {onSkip ? (
         <button
           type="button"
-          onClick={onBegin}
-          className="mt-4 w-full rounded-lg bg-[#00D4AA] px-4 py-2.5 text-sm font-medium text-[#0A0E12]"
+          onClick={onSkip}
+          className="pointer-events-auto mt-2 w-full rounded-lg border border-[#1E2A35] px-3 py-2 text-xs text-[#6B7F8F] hover:text-[#E8EDF2]"
         >
-          {beginLabel}
+          Continue with current tracking
         </button>
       ) : null}
     </div>

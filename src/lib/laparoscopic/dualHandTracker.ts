@@ -2,6 +2,7 @@ import {
   FilesetResolver,
   HandLandmarker,
   type HandLandmarkerResult,
+  type NormalizedLandmark,
 } from "@mediapipe/tasks-vision";
 import type { Point2D } from "@/lib/types";
 import {
@@ -9,13 +10,24 @@ import {
   type InstrumentPositionPipeline,
 } from "@/lib/hand-tracking/instrument-position-pipeline";
 import type { FlsSessionMode } from "./types";
+import {
+  assignScreenSlots,
+  mirrorLandmarks,
+  mirrorX,
+} from "./handSpace";
 
 const WASM_CDN =
-  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
+  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.35/wasm";
 const MODEL_URL =
   "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task";
 
 let dualLandmarker: HandLandmarker | null = null;
+
+/** Shared across sessions — MediaPipe VIDEO mode requires global monotonic timestamps. */
+let lastMediaPipeTimestampMs = 0;
+let mediaPipeDetectInFlight = false;
+let lastDetectWallMs = 0;
+const MIN_DETECT_INTERVAL_MS = 33;
 
 export async function initDualHandLandmarker(): Promise<HandLandmarker> {
   if (dualLandmarker) return dualLandmarker;
@@ -25,9 +37,9 @@ export async function initDualHandLandmarker(): Promise<HandLandmarker> {
     baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" as const },
     runningMode: "VIDEO" as const,
     numHands: 2,
-    minHandDetectionConfidence: 0.7,
-    minHandPresenceConfidence: 0.7,
-    minTrackingConfidence: 0.6,
+    minHandDetectionConfidence: 0.5,
+    minHandPresenceConfidence: 0.5,
+    minTrackingConfidence: 0.5,
   };
 
   try {
@@ -39,27 +51,17 @@ export async function initDualHandLandmarker(): Promise<HandLandmarker> {
     });
   }
 
+  lastMediaPipeTimestampMs = 0;
   return dualLandmarker;
 }
 
-export interface RawHandData {
-  landmarks: Point2D[];
-  handedness: "Left" | "Right" | "Unknown";
-}
-
-/** Smoothed, filtered hand data for instrument control and overlays. */
 export interface ProcessedHandData {
   landmarks: Point2D[];
   handedness: "Left" | "Right" | "Unknown";
-  tipNorm: { x: number; y: number };
+  tipNorm: Point2D;
   isGrasping: boolean;
   confidence: number;
   pinchDistance: number;
-}
-
-export interface DualHandResult {
-  left: RawHandData | null;
-  right: RawHandData | null;
 }
 
 export interface ProcessedDualHandResult {
@@ -74,161 +76,83 @@ function isVideoFrameReady(video: HTMLVideoElement): boolean {
   return (
     video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA &&
     video.videoWidth > 0 &&
-    video.videoHeight > 0
+    video.videoHeight > 0 &&
+    !video.paused &&
+    !video.ended
   );
 }
 
-/** MediaPipe VIDEO mode requires strictly increasing timestamps (ms). */
-function nextMonotonicTimestamp(
-  video: HTMLVideoElement,
-  lastMs: number
+function nextMediaPipeTimestampMs(): number {
+  const now = Math.round(performance.now());
+  lastMediaPipeTimestampMs = Math.max(now, lastMediaPipeTimestampMs + 1);
+  return lastMediaPipeTimestampMs;
+}
+
+function isValidLandmarkSet(landmarks: NormalizedLandmark[] | undefined): boolean {
+  if (!landmarks || landmarks.length < HAND_LANDMARK_COUNT) return false;
+  for (let i = 0; i < HAND_LANDMARK_COUNT; i++) {
+    const lm = landmarks[i];
+    if (
+      !lm ||
+      !Number.isFinite(lm.x) ||
+      !Number.isFinite(lm.y) ||
+      lm.x < -0.5 ||
+      lm.x > 1.5 ||
+      lm.y < -0.5 ||
+      lm.y > 1.5
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function handConfidence(
+  landmarks: NormalizedLandmark[],
+  handednessScore: number | undefined
 ): number {
-  const fromVideo = Math.round(video.currentTime * 1000);
-  let ts =
-    fromVideo > 0 ? fromVideo : Math.max(0, Math.round(performance.now()));
-  if (ts <= lastMs) ts = lastMs + 1;
-  return ts;
+  const vis =
+    landmarks[8]?.visibility ?? landmarks[0]?.visibility ?? undefined;
+  const fromVis = vis !== undefined && vis > 0 ? vis : 0.85;
+  const fromLabel = handednessScore ?? 0.75;
+  return Math.max(0.45, Math.min(1, fromVis * 0.4 + fromLabel * 0.6));
 }
 
-function assignHand(
+function toProcessedHand(
+  raw: NormalizedLandmark[],
+  pipeline: InstrumentPositionPipeline,
   label: "Left" | "Right" | "Unknown",
-  data: ProcessedHandData,
-  left: ProcessedHandData | null,
-  right: ProcessedHandData | null
-): { left: ProcessedHandData | null; right: ProcessedHandData | null } {
-  if (label === "Left") return { left: data, right };
-  if (label === "Right") return { left, right: data };
-  if (!left) return { left: data, right };
-  if (!right) return { left, right: data };
-  return { left, right };
-}
-
-/**
- * Persists EMA / dead-zone / velocity / pinch state across frames.
- * One instance per workspace session.
- */
-export class DualHandTrackingSession {
-  private pipelines: {
-    left: InstrumentPositionPipeline;
-    right: InstrumentPositionPipeline;
+  confidence: number
+): ProcessedHandData {
+  const state = pipeline.process(raw);
+  const tipNorm: Point2D = {
+    x: mirrorX(state.x),
+    y: state.y,
   };
-  private lastDetectTimestampMs = -1;
-
-  constructor(mode: FlsSessionMode = "training") {
-    this.pipelines = createHandPipelines(mode);
-  }
-
-  setMode(mode: FlsSessionMode): void {
-    this.pipelines = createHandPipelines(mode);
-  }
-
-  reset(): void {
-    this.pipelines.left.reset();
-    this.pipelines.right.reset();
-    this.lastDetectTimestampMs = -1;
-  }
-
-  detect(
-    landmarker: HandLandmarker,
-    video: HTMLVideoElement
-  ): ProcessedDualHandResult {
-    if (!isVideoFrameReady(video)) {
-      return EMPTY_PROCESSED;
-    }
-
-    const timestamp = nextMonotonicTimestamp(
-      video,
-      this.lastDetectTimestampMs
-    );
-    this.lastDetectTimestampMs = timestamp;
-
-    let result: HandLandmarkerResult;
-    try {
-      result = landmarker.detectForVideo(video, timestamp);
-    } catch {
-      return EMPTY_PROCESSED;
-    }
-
-    let left: ProcessedHandData | null = null;
-    let right: ProcessedHandData | null = null;
-
-    if (!result.landmarks?.length) {
-      return EMPTY_PROCESSED;
-    }
-
-    for (let i = 0; i < result.landmarks.length; i++) {
-      const raw = result.landmarks[i];
-      if (!raw || raw.length < HAND_LANDMARK_COUNT) continue;
-      const label =
-        result.handednesses?.[i]?.[0]?.categoryName === "Left"
-          ? "Left"
-          : result.handednesses?.[i]?.[0]?.categoryName === "Right"
-            ? "Right"
-            : "Unknown";
-
-      const pipeline =
-        label === "Left"
-          ? this.pipelines.left
-          : label === "Right"
-            ? this.pipelines.right
-            : !left
-              ? this.pipelines.left
-              : this.pipelines.right;
-
-      const state = pipeline.process(raw);
-      const data: ProcessedHandData = {
-        landmarks: state.smoothedLandmarks,
-        handedness: label,
-        tipNorm: { x: state.x, y: state.y },
-        isGrasping: state.isGrasping,
-        confidence: state.confidence,
-        pinchDistance: state.pinchDistance,
-      };
-
-      const assigned = assignHand(label, data, left, right);
-      left = assigned.left;
-      right = assigned.right;
-    }
-
-    return { left, right };
-  }
+  return {
+    landmarks: mirrorLandmarks(state.smoothedLandmarks),
+    handedness: label,
+    tipNorm,
+    isGrasping: state.isGrasping,
+    confidence,
+    pinchDistance: state.pinchDistance,
+  };
 }
 
-let legacyLastTimestampMs = -1;
-
-/** Legacy raw detection — prefer DualHandTrackingSession. */
-export function detectDualHands(
-  landmarker: HandLandmarker,
-  video: HTMLVideoElement
-): DualHandResult {
-  if (!isVideoFrameReady(video)) {
-    return { left: null, right: null };
-  }
-
-  const timestamp = nextMonotonicTimestamp(video, legacyLastTimestampMs);
-  legacyLastTimestampMs = timestamp;
-
-  let result: HandLandmarkerResult;
-  try {
-    result = landmarker.detectForVideo(video, timestamp);
-  } catch {
-    return { left: null, right: null };
-  }
-
-  let left: RawHandData | null = null;
-  let right: RawHandData | null = null;
-
+function processLandmarkerResult(
+  result: HandLandmarkerResult,
+  slotPipelines: [InstrumentPositionPipeline, InstrumentPositionPipeline]
+): ProcessedDualHandResult {
   if (!result.landmarks?.length) {
-    return { left: null, right: null };
+    return EMPTY_PROCESSED;
   }
+
+  const candidates: ProcessedHandData[] = [];
 
   for (let i = 0; i < result.landmarks.length; i++) {
     const raw = result.landmarks[i];
-    if (!raw || raw.length < HAND_LANDMARK_COUNT) continue;
-    const landmarks: Point2D[] = raw.map((lm) => ({
-      x: lm.x,
-      y: lm.y,
-    }));
+    if (!isValidLandmarkSet(raw)) continue;
+
     const label =
       result.handednesses?.[i]?.[0]?.categoryName === "Left"
         ? "Left"
@@ -236,12 +160,78 @@ export function detectDualHands(
           ? "Right"
           : "Unknown";
 
-    const data: RawHandData = { landmarks, handedness: label };
-    if (label === "Left") left = data;
-    else if (label === "Right") right = data;
-    else if (!left) left = data;
-    else if (!right) right = data;
+    const score = result.handednesses?.[i]?.[0]?.score;
+    const confidence = handConfidence(raw, score);
+    const pipeline = slotPipelines[Math.min(i, 1)];
+
+    candidates.push(toProcessedHand(raw, pipeline, label, confidence));
   }
 
-  return { left, right };
+  return assignScreenSlots(candidates);
+}
+
+/**
+ * Persists EMA / dead-zone / velocity / pinch state across frames.
+ * Hands are assigned to left/right instrument slots by screen position
+ * in mirror (selfie) space, not MediaPipe handedness labels.
+ */
+export class DualHandTrackingSession {
+  private slotPipelines: [InstrumentPositionPipeline, InstrumentPositionPipeline];
+  private lastVideoFrameTime = -1;
+  private cached: ProcessedDualHandResult = EMPTY_PROCESSED;
+
+  constructor(mode: FlsSessionMode = "training") {
+    const p = createHandPipelines(mode);
+    this.slotPipelines = [p.left, p.right];
+  }
+
+  setMode(mode: FlsSessionMode): void {
+    const p = createHandPipelines(mode);
+    this.slotPipelines = [p.left, p.right];
+  }
+
+  reset(): void {
+    this.slotPipelines[0].reset();
+    this.slotPipelines[1].reset();
+    this.lastVideoFrameTime = -1;
+    this.cached = EMPTY_PROCESSED;
+  }
+
+  detect(
+    landmarker: HandLandmarker,
+    video: HTMLVideoElement
+  ): ProcessedDualHandResult {
+    if (!isVideoFrameReady(video)) {
+      return this.cached;
+    }
+
+    const frameTime = video.currentTime;
+    if (frameTime === this.lastVideoFrameTime) {
+      return this.cached;
+    }
+
+    if (mediaPipeDetectInFlight) {
+      return this.cached;
+    }
+
+    const wallNow = performance.now();
+    if (wallNow - lastDetectWallMs < MIN_DETECT_INTERVAL_MS) {
+      return this.cached;
+    }
+
+    mediaPipeDetectInFlight = true;
+    try {
+      const timestamp = nextMediaPipeTimestampMs();
+      const result = landmarker.detectForVideo(video, timestamp);
+      const processed = processLandmarkerResult(result, this.slotPipelines);
+      this.lastVideoFrameTime = frameTime;
+      this.cached = processed;
+      lastDetectWallMs = wallNow;
+      return processed;
+    } catch {
+      return this.cached;
+    } finally {
+      mediaPipeDetectInFlight = false;
+    }
+  }
 }
